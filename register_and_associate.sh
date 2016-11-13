@@ -76,6 +76,8 @@ function initMaps (){
   versionCommands["mediaconch"]="mediaconch --version"
   checkersType["mediaconch"]="video/x-matroska,audio/x-matroska,video/webm,\
   audio/webm,audio/L16,audio/L8,audio/L20,audio/L24"
+  versionCommands["dpf-manager"]="dpf-manager --version"
+  checkersType["dpf-manager"]="image/tiff,image/tiff-fx"
 }
 
 checkOptions "$@"
