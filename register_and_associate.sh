@@ -40,20 +40,19 @@ function checkPresence (){
       isVersionNumberDefined=false
       while read -r line; do
         if [ "$isVersionNumberDefined" = false ]; then
-          versionNumber=${line#*' '}
+          versionNumber=$(echo "$line" | grep -o -E '[0-9.]+')
           isVersionNumberDefined=true
         fi
       done <<<"$output"
       if [ ${#versionNumber} -gt 0 ]; then
-        if [[ $versionNumber =~ ^[0-9.]+$ ]]; then
           checkersPresence[$key]=true
-        fi
       fi
     fi
   done
 }
 
 function associateFilesWithCheckers (){
+  IFS=$(echo -en "\n\b")
   for file in $(find $path -type f); do
       typeString=$(mimetype --output-format %m "$file")
       isCheckerDefined=false
@@ -68,11 +67,15 @@ function associateFilesWithCheckers (){
         echo $file": checker unassigned"
       fi
   done
+  IFS=$' \t\n'
 }
 
 function initMaps (){
   versionCommands["verapdf"]="verapdf --version"
   checkersType["verapdf"]="application/pdf"
+  versionCommands["mediaconch"]="mediaconch --version"
+  checkersType["mediaconch"]="video/x-matroska,audio/x-matroska,video/webm,\
+  audio/webm,audio/L16,audio/L8,audio/L20,audio/L24"
 }
 
 checkOptions "$@"
