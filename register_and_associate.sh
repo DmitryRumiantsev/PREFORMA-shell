@@ -29,6 +29,7 @@ function parseOutputFolders {
   for checkerString in "${registeredCheckers[@]}"; do
     checkersName=${checkerString%':'*}
     outputFolders[$checkersName]=${checkerString#*':'}
+    eval "mkdir -p ${outputFolders[$checkersName]}"
   done
   IFS=$' \t\n'
 }
@@ -87,9 +88,9 @@ function associateAndValidate (){
           && [ "${checkersPresence[$key]}" = true ]; then
             echo $file": "$key
             if [[ "$file" = /* ]]; then
-               output=$(eval "${validationCommands[$key]}$file $file")
+               output=$(eval "${validationCommands[$key]}'$file.xml' $file")
             else
-               output=$(eval "${validationCommands[$key]}$file '$PWD'/'$file'")
+               output=$(eval "${validationCommands[$key]}'$file.xml' '$PWD'/'$file'")
             fi
             <<<$output
             isCheckerDefined=true
@@ -109,6 +110,8 @@ function initMaps (){
   checkersType["verapdf"]="application/pdf"
 
   versionCommands["mediaconch"]="mediaconch --version"
+  validationCommands["mediaconch"]="mediaconch --Format=xml -fx\
+   --LogFile='reports_mediaconch/'"
   checkersType["mediaconch"]="video/x-matroska,audio/x-matroska,video/webm,\
   audio/webm"
 
@@ -118,12 +121,14 @@ function initMaps (){
   checkersType["dpf-manager"]="image/tiff,image/tiff-fx"
 }
 
-function cleanTempFolders (){
+function manageTempFolders (){
   eval "rm -rf reports_verapdf/"
   eval "rm -rf reports_dpf_manager/"
+  eval "rm -rf reports_mediaconch"
+  eval "mkdir -p reports_mediaconch"
 }
 
-cleanTempFolders
+manageTempFolders
 checkOptions "$@"
 initMaps
 updateValidationCommands
