@@ -1,5 +1,6 @@
 #!/bin/bash
 declare -A versionCommands
+declare -A validationCommands
 declare -A checkersPresence
 declare -A checkersType
 
@@ -51,7 +52,7 @@ function checkPresence (){
   done
 }
 
-function associateFilesWithCheckers (){
+function associateAndValidate (){
   IFS=$(echo -en "\n\b")
   for file in $(find $path -type f); do
       typeString=$(mimetype --output-format %m "$file")
@@ -60,6 +61,7 @@ function associateFilesWithCheckers (){
           checkersTypeString=${checkersType[$key]}
           if [[ "$checkersTypeString" = *"$typeString"* ]] && [ "${checkersPresence[$key]}" = true ]; then
             echo $file": "$key
+            eval ${validationCommands[$key]} $file
             isCheckerDefined=true
           fi
       done
@@ -69,17 +71,27 @@ function associateFilesWithCheckers (){
   done
   IFS=$' \t\n'
 }
+
 function initMaps (){
   versionCommands["verapdf"]="verapdf --version"
+  validationCommands["verapdf"]="verapdf  --format xml \
+   --reportfolder reports_verapdf "
   checkersType["verapdf"]="application/pdf"
+
   versionCommands["mediaconch"]="mediaconch --version"
   checkersType["mediaconch"]="video/x-matroska,audio/x-matroska,video/webm,\
   audio/webm"
+
   versionCommands["dpf-manager"]="dpf-manager --version"
   checkersType["dpf-manager"]="image/tiff,image/tiff-fx"
 }
 
+function cleanTempFolders (){
+  eval "rm -rf reports_verapdf/"
+}
+
+cleanTempFolders
 checkOptions "$@"
 initMaps
 checkPresence
-associateFilesWithCheckers
+associateAndValidate
