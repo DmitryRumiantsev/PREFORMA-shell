@@ -59,9 +59,15 @@ function associateAndValidate (){
       isCheckerDefined=false
       for key in "${!checkersType[@]}";  do
           checkersTypeString=${checkersType[$key]}
-          if [[ "$checkersTypeString" = *"$typeString"* ]] && [ "${checkersPresence[$key]}" = true ]; then
+          if [[ "$checkersTypeString" = *"$typeString"* ]] \
+          && [ "${checkersPresence[$key]}" = true ]; then
             echo $file": "$key
-            eval ${validationCommands[$key]} $file
+            if [[ "$file" = /* ]]; then
+               output=$(eval "${validationCommands[$key]}$file $file")
+            else
+               output=$(eval "${validationCommands[$key]}$file '$PWD'/'$file'")
+            fi
+            <<<$output
             isCheckerDefined=true
           fi
       done
@@ -75,7 +81,7 @@ function associateAndValidate (){
 function initMaps (){
   versionCommands["verapdf"]="verapdf --version"
   validationCommands["verapdf"]="verapdf  --format xml \
-   --reportfolder reports_verapdf "
+   --reportfolder 'reports_verapdf/'"
   checkersType["verapdf"]="application/pdf"
 
   versionCommands["mediaconch"]="mediaconch --version"
@@ -83,11 +89,14 @@ function initMaps (){
   audio/webm"
 
   versionCommands["dpf-manager"]="dpf-manager --version"
+  validationCommands["dpf-manager"]="dpf-manager check -c\
+   '$PWD/configs/default.dpf' -o '$PWD/reports_dpf_manager/'"
   checkersType["dpf-manager"]="image/tiff,image/tiff-fx"
 }
 
 function cleanTempFolders (){
   eval "rm -rf reports_verapdf/"
+  eval "rm -rf reports_dpf_manager/"
 }
 
 cleanTempFolders
