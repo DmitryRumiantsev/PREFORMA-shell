@@ -3,11 +3,11 @@ declare -A versionCommands
 declare -A validationCommands
 declare -A checkersPresence
 declare -A checkersType
-
+declare -A outputFolders
 path="./"
 
 function checkOptions (){
-  while getopts ":p:l:" option; do
+  while getopts ":p:l:o:" option; do
     case $option in
       p)
         path=$OPTARG
@@ -15,9 +15,22 @@ function checkOptions (){
       l)
         parseCheckersInfo "$OPTARG"
         ;;
+      o)
+        parseOutputFolders "$OPTARG"
+      ;;
     esac
   done
   path=$path"*"
+}
+
+function parseOutputFolders {
+  IFS=';'
+  read -ra registeredCheckers <<< "$1"
+  for checkerString in "${registeredCheckers[@]}"; do
+    checkersName=${checkerString%':'*}
+    outputFolders[$checkersName]=${checkerString#*':'}
+  done
+  IFS=$' \t\n'
 }
 
 function parseCheckersInfo {
@@ -48,6 +61,17 @@ function checkPresence (){
       if [ ${#versionNumber} -gt 0 ]; then
           checkersPresence[$key]=true
       fi
+    fi
+  done
+}
+
+function updateValidationCommands (){
+  for key in "${!outputFolders[@]}"; do
+    tempString="${validationCommands[$key]%"'"*}"
+    if [[ "${outputFolders[$key]}" = /* ]]; then
+      validationCommands[$key]="${tempString%"'"*}'${outputFolders[$key]}/'"
+    else
+      validationCommands[$key]="${tempString%"'"*}'$PWD/${outputFolders[$key]}/'"
     fi
   done
 }
@@ -102,5 +126,6 @@ function cleanTempFolders (){
 cleanTempFolders
 checkOptions "$@"
 initMaps
+updateValidationCommands
 checkPresence
 associateAndValidate
