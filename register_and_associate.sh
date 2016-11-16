@@ -27,8 +27,8 @@ function parseOutputFolders {
   IFS=';'
   read -ra registeredCheckers <<< "$1"
   for checkerString in "${registeredCheckers[@]}"; do
-    checkersName=${checkerString%':'*}
-    outputFolders[$checkersName]=${checkerString#*':'}
+    checkersName=$(echo ${checkerString%':'*} | xargs)
+    outputFolders[$checkersName]=$(echo ${checkerString#*':'} | xargs)
     eval "mkdir -p ${outputFolders[$checkersName]}"
   done
   IFS=$' \t\n'
