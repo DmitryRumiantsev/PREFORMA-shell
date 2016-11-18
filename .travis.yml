@@ -1,5 +1,5 @@
 language: bash
-
+sudo: required
 before_install:
   - bash wget http://downloads.verapdf.org/rel/verapdf-installer.zip
   - bash unzip verapdf-installer.zip
