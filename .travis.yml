@@ -1,0 +1,8 @@
+language: bash
+
+before_install:
+  - wget http://downloads.verapdf.org/rel/verapdf-installer.zip
+  - unzip verapdf-installer.zip
+  - cd verapdf-0.24.2
+  - ./verapdf-install.sh
+  - ./verapdf --version
