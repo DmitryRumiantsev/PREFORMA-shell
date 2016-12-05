@@ -3,6 +3,5 @@ language: bash
 before_install:
   - wget http://downloads.verapdf.org/rel/verapdf-installer.zip
   - unzip verapdf-installer.zip -d ./vera-installer
-  - cd vera-installer
-  - ./verapdf-install.sh
+  - find ./vera-installer -name "verapdf-install" -type f -exec {} \;
   - ./verapdf --version
